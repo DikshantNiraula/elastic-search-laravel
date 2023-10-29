@@ -4,6 +4,7 @@
 <div class="container">
     <div class="search-container">
         <input type="text" class="form-control" id="search-input" placeholder="Search...">
+        <ul id="suggestion-list"></ul>
     </div>
 
     <h2>Search Results</h2>
@@ -17,7 +18,31 @@
         $(document).ready(function () {
             var searchInput = $('#search-input');
             var searchResults = $('#search-results');
+            var suggestionList = $('#suggestion-list');
 
+            ////////////////////////////////// Code for Autocomplete //////////////////////////////////
+            searchInput.on('keyup', function () {
+                console.log("Dfsdf")
+                var query = searchInput.val().trim();
+                suggestionList.empty();
+
+                if (query.length > 1) {
+                    // Send an AJAX request to Elasticsearch for autocomplete suggestions
+                    $.ajax({
+                        url: "{{ route('autocomplete') }}",
+                        method: 'GET',
+                        data: { query: query },
+                        success: function (data) {
+                            // Display autocomplete suggestions
+                            data.forEach(function (suggestion) {
+                                suggestionList.append('<li>' + suggestion + '</li>');
+                            });
+                        }
+                    });
+                }
+            });
+
+            ////////////////////////////////// Code for Results //////////////////////////////////
             searchInput.on('keydown', function (e) {
                 if (e.key === 'Enter') {
                     e.preventDefault(); // Prevent the form from submitting (if applicable)

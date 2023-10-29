@@ -8,6 +8,12 @@ use App\BlogPost;
 
 class SearchController extends Controller
 {
+    protected $client;
+
+    public function __construct()
+    {
+       $this->client =  ClientBuilder::create()->setHosts(config('database.connections.elasticsearch.hosts'))->build(); 
+    }
 
     public function searchPage()
     {
@@ -16,9 +22,8 @@ class SearchController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('query');
-        $client = ClientBuilder::create()->setHosts(config('database.connections.elasticsearch.hosts'))->build();
 
-        if(!$client->indices()->exists(['index' => 'blogs'])){
+        if(!$this->client->indices()->exists(['index' => 'blogs'])){
             BlogPost::createIndex();
             dd("created");
         }
@@ -35,12 +40,40 @@ class SearchController extends Controller
         ];
 
         try {
-            $response = $client->search($params);
+            $response = $this->client->search($params);
         } catch (\Exception $e) {
             // Handle the exception
             return response()->view('error_page', ['message' => 'An error occurred while searching.']);
         }
         return $response;
+    }
+
+    public function autoComplete(Request $request)
+    {
+        $query = $request->input('query');
+
+        $params = [
+            'index' => 'blogs',
+            'body' => [
+                'suggest' => [
+                    'suggestions' => [
+                        'prefix' => $query,
+                        'completion' => [
+                            'field' => 'title',
+                            'size' => 5
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        $response = $this->client->search($params);
+        
+        // Extract and format autocomplete suggestions from the Elasticsearch response
+        $suggestions = $response['suggest']['suggestions'][0]['options'];
+        $suggestions = array_column($suggestions, 'text');
+        
+        return $suggestions;
+        
     }
 
 }

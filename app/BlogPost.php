@@ -16,7 +16,7 @@ class BlogPost extends Model
             'body' => [
                 'mappings' => [
                     'properties' => [
-                        'title' => ['type' => 'text'],
+                        'title' => ['type' => 'completion'],
                         'content' => ['type' => 'text'],
                         'published_at' => ['type' => 'date'],
                     ],

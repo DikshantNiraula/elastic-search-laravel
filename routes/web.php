@@ -32,5 +32,6 @@ Route::get('/', function () {
     // return view('welcome');
 });
 
-Route::get('/search-page', 'SearchController@searchPage')->name('searchPage');
+Route::get('/search-page', 'SearchController@searchPage')->name('search-page');
 Route::get('/search', 'SearchController@search')->name('search');
+Route::get('/autocomplete', 'SearchController@autoComplete')->name('autocomplete');
